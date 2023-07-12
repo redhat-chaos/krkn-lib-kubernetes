@@ -12,10 +12,8 @@ from typing import List, Dict
 from kubernetes import config
 from kubernetes.client import ApiException
 from requests import ConnectTimeout
-
 from krkn_lib_kubernetes import ApiRequestException
 from jinja2 import Environment, FileSystemLoader
-
 from .client import KrknLibKubernetes
 
 
@@ -690,6 +688,36 @@ class KrknLibKubernetesTests(BaseTest):
         except Exception as e:
             logging.error("test raised exception {0}".format(str(e)))
             self.assertTrue(False)
+
+    def test_get_all_kubernetes_object_count(self):
+        objs = self.lib_k8s.get_all_kubernetes_object_count(
+            ["Namespace", "Ingress", "ConfigMap", "Unknown"]
+        )
+        self.assertTrue("Namespace" in objs.keys())
+        self.assertTrue("Ingress" in objs.keys())
+        self.assertTrue("ConfigMap" in objs.keys())
+        self.assertFalse("Unknown" in objs.keys())
+
+    def test_get_kubernetes_core_objects_count(self):
+        objs = self.lib_k8s.get_kubernetes_core_objects_count(
+            "v1",
+            [
+                "Namespace",
+                "Ingress",
+                "ConfigMap",
+            ],
+        )
+        self.assertTrue("Namespace" in objs.keys())
+        self.assertTrue("ConfigMap" in objs.keys())
+        self.assertFalse("Ingress" in objs.keys())
+
+    def test_get_kubernetes_custom_objects_count(self):
+        objs = self.lib_k8s.get_kubernetes_custom_objects_count(
+            ["Namespace", "Ingress", "ConfigMap", "Unknown"]
+        )
+        self.assertFalse("Namespace" in objs.keys())
+        self.assertFalse("ConfigMap" in objs.keys())
+        self.assertTrue("Ingress" in objs.keys())
 
 
 if __name__ == "__main__":
